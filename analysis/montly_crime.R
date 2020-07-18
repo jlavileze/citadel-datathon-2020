@@ -22,3 +22,8 @@ reg <- lm(crime.train ~ trend + trend.squared + is.olympic.year)
 # Seems like there is quite a bit of predictive capacity on the crime time series.
 # The decompose function + periodogram both reveal a bit of information on the crime patterns experienced in London
 # We can perform inference on the periodogram to assess the significance/CI for each peak
+
+model.hw <- HoltWinters(crime)
+plot(predict(model.hw, 10))
+
+plot(model.hw, predicted.values = predict(model.hw, 10))
