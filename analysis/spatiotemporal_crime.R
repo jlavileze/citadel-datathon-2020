@@ -5,7 +5,8 @@ df <- read.csv("data/crime_by_borough.csv", row.names = "Borough")
 pca.1 <- prcomp(df)
 pca.2 <- prcomp(t(df))
 
-pca.1$x
+sum(pca.1$sdev[1:3]^2)/sum(pca.1$sdev^2)
+sum(pca.2$sdev[1:3]^2)/sum(pca.2$sdev^2)
 
 write.csv(pca.1$x, "data/crime_pca_spatial.csv")
 write.csv(pca.2$x, "data/crime_pca_temporal.csv")
@@ -20,11 +21,17 @@ pc1.decomp <- decompose(-pc1.ts)
 pc1.detrended <- pc1.decomp$x - pc1.decomp$trend
 pc1.detrended <- pc1.detrended[!is.na(pc1.detrended)]
 
+plot(pc1.decomp$trend)
+
 autoplot(-pc1.ts)
 autoplot(decompose(-pc1.ts))
 
 -pc1.ts %>% decompose %>% autoplot
+-pc2.ts %>% decompose %>% autoplot
+-pc3.ts %>% decompose %>% autoplot
 spec.pgram(pc1.detrended, taper=0, log="no")
+
+plot(-pc1.ts, -pc2.ts, -pc3.ts)
 
 # How do I pretty plot spectrogram?
 
@@ -86,3 +93,7 @@ plot(ts3, main="Average monthly crime in East boroughs")
 events <- xts(c("Olympics", "Forecast"), as.Date(c("2012-07-01", "2019-01-01")))
 addEventLines(events, srt=90, pos=2)
 events
+
+
+
+write.csv(crime.east.pc, "data/temporal_pcs.csv")
