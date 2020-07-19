@@ -108,3 +108,6 @@ events
 
 
 write.csv(crime.east.pc, "data/temporal_pcs.csv")
+
+hw.pc1
+summary(m)
