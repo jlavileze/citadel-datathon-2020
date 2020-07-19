@@ -17,6 +17,17 @@ pc1.ts <- ts(as.vector(pca.2$x[,1]), frequency=12, start=c(2008,1))
 pc2.ts <- ts(as.vector(pca.2$x[,2]), frequency=12, start=c(2008,1))
 pc3.ts <- ts(as.vector(pca.2$x[,3]), frequency=12, start=c(2008,1))
 
+
+pc1.decomposition <- decompose(-pc1.ts)
+pc2.decomposition <- decompose(-pc2.ts)
+pc3.decomposition <- decompose(-pc3.ts)
+
+pc.trends <- data.frame(pc1.decomposition$trend, pc2.decomposition$trend, pc3.decomposition$trend)
+
+write.csv(pc.trends, "data/crime_pc_trends.csv")
+
+
+
 pc1.decomp <- decompose(-pc1.ts)
 pc1.detrended <- pc1.decomp$x - pc1.decomp$trend
 pc1.detrended <- pc1.detrended[!is.na(pc1.detrended)]
