@@ -29,19 +29,19 @@ spec.pgram(pc1.detrended, taper=0, log="no")
 # How do I pretty plot spectrogram?
 
 # PC1: Level
-hw.pc1 <- HoltWinters(-pc1.ts)
-forecast <- predict(hw.pc1, n.ahead=12, level = 0.8)
-plot(hw.pc1, forecast, main="Holt-Winters prediction for crime spatiotemporal PC1")
+hw.pc1 <- HoltWinters(ts(scale(-pc1.ts), frequency=12, start=c(2008,1)))
+forecast.pc1 <- predict(hw.pc1, n.ahead=12, level = 0.8, prediction.interval = T)
+plot(hw.pc1, forecast.pc1, main="Holt-Winters prediction for crime spatiotemporal PC1")
 
 # PC2: Funding
-hw.pc2 <- HoltWinters(-pc2.ts)
-forecast <- predict(hw.pc2, n.ahead=12, level = 0.8)
-plot(hw.pc2, forecast, main="Holt-Winters prediction for crime spatiotemporal PC2")
+hw.pc2 <- HoltWinters(ts(scale(-pc2.ts), frequency=12, start=c(2008,1)))
+forecast.pc2 <- predict(hw.pc2, n.ahead=12, level = 0.8, prediction.interval = T)
+plot(hw.pc2, forecast.pc2, main="Holt-Winters prediction for crime spatiotemporal PC2")
 
 # PC3: Media excitement (peaks in 2012 and 2018 correlated to Olympics and post-Brexit)
-hw.pc3 <- HoltWinters(-pc3.ts)
-forecast <- predict(hw.pc3, n.ahead=12, level = 0.8)
-plot(hw.pc3, forecast, main="Holt-Winters prediction for crime spatiotemporal PC3")
+hw.pc3 <- HoltWinters(ts(scale(-pc3.ts), frequency=12, start=c(2008,1)))
+forecast.pc3 <- predict(hw.pc3, n.ahead=12, level = 0.8, prediction.interval = T)
+plot(hw.pc3, forecast.pc3, main="Holt-Winters prediction for crime spatiotemporal PC3")
 
 ## Let's regress the east series on PC1/2/3
 
@@ -55,5 +55,34 @@ crime.east.pc <- data.frame(east, -pc1.ts, -pc2.ts, -pc3.ts)
 colnames(crime.east.pc) <- c("east", "pc1", "pc2", "pc3")
 crime.east.pc.scaled <- data.frame(scale(crime.east.pc))
 
-m <- lm(east ~ pc1 + pc2 + pc3, data=crime.east.pc.scaled)
+google.trends <- read.csv("data/london_google_trends_clean.csv")
+head(google.trends)
+crime.east.pc.scaled$GoogleTrends <- google.trends$GoogleTrendsInterest
+
+head(crime.east.pc.scaled)
+
+m <- lm(east ~ pc1 + pc2 + pc3 + GoogleTrends, data=crime.east.pc.scaled)
 summary(m)
+st(east)
+st
+east.factor.forecast <- m$coefficients[2] * forecast.pc1[,1] + m$coefficients[3] * forecast.pc2[,1] + m$coefficients[4] * forecast.pc3[,1]
+
+east.factor.forecast.descaled <- sd(east) * east.factor.forecast + mean(east)
+
+plot(east.factor.forecast.descaled)
+ts(east.factor.forecast.descaled, frequency = 12, start=c(2019,1))
+
+plot(east, ts(east.factor.forecast.descaled, frequency = 12, start=c(2019,1)))
+
+plot(east)
+
+library(xts)
+
+ts1<-as.xts(east)
+ts2<-as.xts(east.factor.forecast.descaled)
+ts3 <- c(ts1, ts2)
+ts3
+plot(ts3, main="Average monthly crime in East boroughs")
+events <- xts(c("Olympics", "Forecast"), as.Date(c("2012-07-01", "2019-01-01")))
+addEventLines(events, srt=90, pos=2)
+events
